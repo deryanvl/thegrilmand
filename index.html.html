@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sessiz Kütüphane - thegrilmand</title>
+    <style>
+        :root {
+            --bg-color: #FAF6F0;
+            --text-color: #3d352a;
+            --card-bg: #FFFFFF;
+            --btn-bg: #7A6553;
+            --btn-hover: #544335;
+            --border-color: #D4C3B3;
+            --accent-gold: #C29B38;
+            --heart-color: #e74c3c;
+        }
+
+        [data-theme="sepia"] {
+            --bg-color: #F4ECD8;
+            --text-color: #5c4033;
+            --card-bg: #FCF8EE;
+            --border-color: #D6C29E;
+            --btn-bg: #8B5A2B;
+            --btn-hover: #5C3A21;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1c1815;
+            --text-color: #e6dfd5;
+            --card-bg: #28231f;
+            --border-color: #4a3f35;
+            --btn-bg: #8C7563;
+            --btn-hover: #ab9380;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.8;
+            padding: 20px;
+        }
+
+        #progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background-color: var(--accent-gold);
+            width: 0%;
+            z-index: 1000;
+            transition: width 0.1s;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            border: 3px double var(--border-color);
+            padding: 30px;
+            background-color: var(--bg-color);
+            box-shadow: 0 0 25px rgba(0,0,0,0.05);
+            border-radius: 8px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 25px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        header::after {
+            content: "❖ ❖ ❖";
+            display: block;
+            margin-top: 15px;
+            color: var(--accent-gold);
+            font-size: 0.9rem;
+            letter-spacing: 5px;
+        }
+
+        header h1 {
+            font-size: 2.6rem;
+            margin-bottom: 10px;
+            letter-spacing: 1.5px;
+        }
+
+        header p {
+            font-style: italic;
+            opacity: 0.85;
+            font-size: 1.15rem;
+        }
+
+        /* Books Grid */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 35px;
+            padding: 10px 0;
+        }
+
+        .book-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+            outline: 1px solid var(--border-color);
+            outline-offset: 4px;
+            box-shadow: 0 6px 18px rgba(61, 53, 42, 0.08);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, outline-color 0.3s ease;
+        }
+
+        .book-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(61, 53, 42, 0.15);
+            outline-color: var(--accent-gold);
+        }
+
+        .fav-btn {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: rgba(255,255,255,0.85);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            z-index: 10;
+        }
+
+        .fav-btn.active {
+            color: var(--heart-color);
+        }
+
+        .book-cover-container {
+            padding: 15px 15px 0 15px;
+            background-color: rgba(0,0,0,0.02);
+        }
+
+        .book-cover {
+            width: 100%;
+            height: 380px;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .book-info {
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: space-between;
+        }
+
+        .book-info h3 {
+            font-size: 1.45rem;
+            margin-bottom: 5px;
+        }
+
+        .book-info .author {
+            font-size: 0.95rem;
+            font-style: italic;
+            color: var(--accent-gold);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .read-time {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-bottom: 12px;
+        }
+
+        .book-summary {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 20px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-align: justify;
+        }
+
+        .read-btn {
+            background-color: var(--btn-bg);
+            color: white;
+            border: 1px solid var(--border-color);
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-family: 'Georgia', serif;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .read-btn:hover {
+            background-color: var(--btn-hover);
+        }
+
+        .author-box {
+            margin-top: 50px;
+            padding: 25px;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            background-color: rgba(0,0,0,0.015);
+            text-align: center;
+        }
+
+        .author-box h4 {
+            color: var(--accent-gold);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        /* Reader View Styling */
+        .reader-view {
+            display: none;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 40px;
+            border: 2px solid var(--border-color);
+            outline: 1px solid var(--border-color);
+            outline-offset: 4px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        .reader-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: none;
+            border: 1px solid var(--btn-bg);
+            color: var(--text-color);
+            padding: 9px 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Georgia', serif;
+        }
+
+        .back-btn:hover {
+            background-color: var(--btn-bg);
+            color: white;
+        }
+
+        .tool-btn {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-color);
+            font-weight: bold;
+        }
+
+        .reader-meta-box {
+            background-color: rgba(0,0,0,0.02);
+            border: 1px dashed var(--border-color);
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            font-style: italic;
+            opacity: 0.85;
+        }
+
+        /* Reader Cover Image */
+        .reader-cover-wrapper {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .reader-cover-img {
+            max-width: 240px;
+            height: 330px;
+            object-fit: cover;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+
+        .chapter-content {
+            font-size: 1.15rem;
+            line-height: 1.9;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            padding: 20px;
+            background-color: rgba(0,0,0,0.01);
+            border-radius: 4px;
+            border-left: 3px solid var(--accent-gold);
+        }
+
+        .reader-footer-note {
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 1px dashed var(--border-color);
+            text-align: center;
+            font-style: italic;
+            opacity: 0.8;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="progress-bar"></div>
+
+    <div class="container">
+        <!-- ANA SAYFA -->
+        <div id="home-view">
+            <header>
+                <h1>Sessiz Kütüphane</h1>
+                <p>thegrilmand'in eserlerinin resmi dünyasına hoş geldiniz. Bir kitap seçin ve hikâyenin derinliklerinde kaybolun.</p>
+            </header>
+
+            <div class="books-grid" id="books-container"></div>
+
+            <div class="author-box">
+                <h4>Yazar Hakkında</h4>
+                <p><strong>thegrilmand</strong>, karakterlerin iç dünyalarını, tutkulu ilişkileri ve sırlarla dolu intikam hikayelerini sürükleyici bir dille kaleme alan genç bir yazardır.</p>
+            </div>
+        </div>
+
+        <!-- OKUMA MODU -->
+        <div id="reader-view" class="reader-view">
+            <div class="reader-header">
+                <button class="back-btn" onclick="goBack()">← Kütüphaneye Dön</button>
+                <div>
+                    <button class="tool-btn" onclick="changeFontSize(-1)">A-</button>
+                    <button class="tool-btn" onclick="changeFontSize(1)">A+</button>
+                    <button class="tool-btn" onclick="setTheme('light')">Açık</button>
+                    <button class="tool-btn" onclick="setTheme('sepia')">Sepya</button>
+                    <button class="tool-btn" onclick="setTheme('dark')">Karanlık</button>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 10px; color: var(--accent-gold); font-size: 1.1rem;">✦ ── ✦</div>
+            <h2 id="reader-book-title" style="margin-bottom: 10px; text-align: center;"></h2>
+            
+            <div class="reader-meta-box">
+                <span id="reader-author-tag">Yazar: thegrilmand</span>
+                <span id="reader-stats-tag">Kitap Okuma Alanı</span>
+            </div>
+
+            <!-- Kapağı doğrudan metnin üstüne koyduk -->
+            <div class="reader-cover-wrapper">
+                <img id="reader-cover-img" src="" alt="Kitap Kapağı" class="reader-cover-img">
+            </div>
+
+            <!-- Kitap Metni -->
+            <div id="reader-content" class="chapter-content"></div>
+
+            <!-- Alt kısma eklenen edebi detay -->
+            <div class="reader-footer-note">
+                <p>❝ Keyifli okumalar dileriz. Hikâye hakkındaki düşüncelerinizi paylaşmayı unutmayın. ❞</p>
+                <div style="margin-top: 10px; color: var(--accent-gold); letter-spacing: 3px;">❖ ❖ ❖</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const booksData = [
+            {
+                id: 1,
+                title: "KÜL",
+                author: "-thegrilmand-",
+                cover: "kul.jpeg",
+                summary: "Eski bir tanıdıktan gelen gizemli bir mesajla başlayan ve geçmişin sırlarıyla harmanlanan soluksuz bir mesajlaşma hikayesi. Baran ve Asya arasındaki bağ yeniden kurulurken kim kimin oyununa düşecek?",
+                readTime: "8 dk okuma süresi",
+                content: `baranaksoyy: Selam
+Görüldü, 19:49
+baranaksoyy: Selam dedim, 
+bir cevap yok mu?
+(21:23)
+asyakitasi: Selamda kimsin?
+(21:30)
+baranaksoyy: Bir tanıdık 
+(21:31)
+asyakitasi: Hmm öyle mi?
+(22:06)
+baranaksoyy: Evet
+(22:07)
+asyakitasi: Tanıdık çok,
+ biraz ipucu ver o zaman.
+(22:10)
+baranaksoyy: Zamanında çok sohbet ederdik, 
+hatırlarsın belki...
+(22:11)
+asyakitasi: Hatırlamak istesem 
+hatırlarım belki de, hâlâ net değil.
+(22:14)
+baranaksoyy: Biraz daha konuşursak hatırlarsın
+ bence.
+(22:15)
+asyakitasi: Deneyelim bakalım.
+(22:17)
+baranaksoyy: beni tanımamana şaşırdım aslında,
+ ama biraz eski dostuz tanımaman biraz normal.
+(22:20)
+asyakitasi: tam ne kadar eski?
+(22:43)
+baranaksoyy: var bi yedi yıl
+(22:50)
+asyakitasi: tanımamam normalmiş
+ ama hatırlamaya denerim
+(23:01)
+asyakitasi: fotonu at hem tanımam
+ daha kolay olur
+(23:05)
+Görüldü, 23:13
+asyakitasi: neden görüldü attın
+(23:20)
+baranaksoyy: özür dilerim gece girip atmayı
+unuttum ve uyumuşum
+(05:42)
+asyakitasi: problem değil 
+(08:26)
+baranaksoyy: iş görüşmesinden çıktığımda
+ atarım merak etme
+(08:30)
+asyakitasi: tamam 
+(08:31)
+Görüldü, 09:17
+baranaksoyy: Bir fotoğraf gönderildi...
+(09:25)
+asyakitasi: yok artık
+(09:26)
+baranaksoyy: tanıyabildin mi
+(09:43)
+asyakitasi: evet lise den namıdeğer 
+kaptan baran
+(09:47)
+baranaksoyy: ta kendisi
+(09:55)
+asyakitasi: ee daha daha nasılsın
+ bayadır iletişim kurmuyoruz bayadır 
+dediğim yedi yıldır filan heralde akdısjdjahsj
+(10:01)
+baranaksoyy: iyiyim işte matematik
+öğretmenliği için iş arıyorum sen nasılsın
+(10:17)
+asyakitasi: bende iyiyim konservatuvar
+ okuyorum izmirde
+(10:18)
+baranaksoyy: ne güzel senin sesin zaten hep
+ iyiydi tam kendi mesleğini bulmuşsun
+(10:20)
+asyakitasi: evet
+(10:56)
+baranaksoyy: aylin abla ve çetin abi nasıllar
+(10:58) 
+asyakitasi: iyiler onlarda fethiyede 
+tatildeler
+(11:23)
+baranaksoyy: ne güzel ya, onlara da selam söyle... çocukken evinizde geçirdiğimiz yazlar geldi aklıma şimdi
+(11:25)
+asyakitasi: tamam söylerim
+(11:27)
+baranaksoyy: günaydın asya
+(08:53)
+asyakitasi: günaydın kaptanım
+(08:54)
+baranaksoyy: sabahları kahve içmeyi seviyordun 
+(09:32)
+asyakitasi: evet kahve benim 
+vazgeçilmezim
+(09:45)
+baranaksoyy: bilmem mi
+(09:51)
+asyakitasi: bilir misin
+(09:52)
+baranaksoyy: evet 
+(09:56)
+asyakitasi: senin benim hakkımda her şeyi 
+bilip benim seni daha çok çok hatırlayamamam
+(09:56)
+baranaksoyy: olsun zamanla hatırlarsın belki
+(09:99)
+asyakitasi: biraz zor eskileri hatırlamakta 
+zorluk çekiyorum
+(10:03)
+baranaksoyy: önemli değil, birlikte yeni anılar biriktiririz biz de
+(10:04)
+asyakitasi: olabilirrr🤗
+(10:07)
+baranaksoyy: bunu birlikte anı biriktirmeyi 
+kabul ediyorsun gibi anlıyorum o zaman😜
+(10:07)
+Görüldü, 11:23
+baranaksoyy: neden yine görüldü attınız hanımefendi
+(11:24)
+asyakitasi: işim vardı biraz özür dilerim
+(11:32)
+baranaksoyy: sorun yok
+(11:33)
+asyakitasi: sen nerde yaşıyorsun şimdi
+(12:12)
+baranaksoyy: adanada
+(12:29)
+asyakitasi: hm
+(12:53)
+baranaksoyy: evet
+(12:54)
+asyakitasi: adanayı severim aslında, 
+yazın daha güzel oluyor
+(13:02)
+baranaksoyy: evet, yazın baya hareketli olur burası
+(13:05)
+asyakitasi: sen hep orda mıydın yoksa 
+sonradan mı taşındın
+(13:08)
+baranaksoyy: sonradan taşındım
+eskiden manisadaydım
+(13:09)
+asyakitasi: tamam
+(13:11)
+baranaksoyy: neden bu kadar meşgulsün asya?
+(13:18)
+asyakitasi: ödevimi düzenliyordum
+(13:20)
+baranaksoyy: ne ödeviymiş o söyle elimden geldiği kadarıyla yardım ederim
+(13:21)
+asyakitasi: dinlediğim melodiyi nota
+ çeviriyorum
+(13:22)
+baranaksoyy: yardım etmemi istersen buradayım
+(13:23)
+asyakitasi: yok, gerek yok bitiyor
+ zaten çok az kaldı
+(13:24)
+baranaksoyy: tamamdır bitirdiğinde yaz 
+sohbet edelim
+(13:25)
+asyakitasi: ödev yapmam sohbet
+ etmememiz için bir bahane değil kii
+(13:26)
+baranaksoyy: olmaz öyle sen rahat rahat
+ ödevini bitir ondan sonra konuşuruz
+(13:27)
+asyakitasi: tamammm
+(13:28)
+baranaksoyy: başka ödevin var mııı
+(13:34)
+asyakitasi: evettt
+(13:41)
+baranaksoyy: nasılll
+(13:42)
+asyakitasi: piyano parçası besteleme vardı 
+şarkı dinlerken şarjım bitmiş farketmedim
+ geç cevap verdiğim için özür dilerim
+ kaptanımmmm
+(18:04)
+baranaksoyy: sorun değillll
+(18:05)
+asyakitasi: sonunda yapabildim video
+ çekip atmamı ister misiinnn;))))
+(18:09)
+baranaksoyy: buda soru mu yaaa 
+tabikideeee
+(18:10)
+asyakitasi: bir video gönderildi...
+(18:13)
+baranaksoyy: çok iyiiiiii
+(18:17)
+Görüldü, 18:19
+baranaksoyy: hemende görüldü at zaten
+(18:34)
+Görüldü, 18:41
+baranaksoyy: bir şey mi olduuuu??
+(18:44)
+Görüldü, 18:46
+baranaksoyy: yazmaya karar verince yaz
+ben hep buradayım
+asyakitasi: annemler aradı onlarla 
+konuşuyordummmm
+(18:57)
+baranaksoyy: tamamdırrr selamımı
+iletmişindir umarımmm
+(18:58)
+asyakitasi: tabikidee asla unutmam
+(18:58)
+baranaksoyy: senin böyle düşünceli
+olman da ayrı güzel ya, insanın yüzünü
+ güldürüyorsunnn
+(18:59)
+asyakitasi: baran bey biraz fazla iltifat 
+ediyorsunuz sanki
+(19:00)
+baranaksoyy: öyle mi olmuş
+(19:01)
+asyakitasi: evet
+(19:03)
+baranaksoyy: belki belirli bir nedenden dolayı sana
+iltifat ediyorumdur
+(19:12)
+asyakitasi: o nedenler arasında 
+aşık olma var mıdır acaba
+(19:13)
+baranaksoyy: hm galiba ciddende var
+(19:14)
+asyakitasi: yok artık... bunu beklemiyordum
+(19:15)
+baranaksoyy: ama söyledim bir kere,
+ geri alamam
+(19:16)
+asyakitasi: peki şimdi ne olacak?
+(19:17)
+baranaksoyy: şimdi istersen sessizce seni
+sevmeye devam ederim, istersen birlikte
+bir yol çizeriz
+(19:18)
+asyakitasi: düşünmem için bana biraz
+zaman verir misinnnn
+(19:32)
+baranaksoyy: istediğin şey zaman olsun
+(19:33)
+baranaksoyy: düşündün mü asya?
+(02:36)
+baranaksoyy: düşünmediysen beklerim ha
+(02:47)
+baranaksoyy: cidden
+(02:53)
+baranaksoyy: sabaha kadar da olsa beklerim
+(02:54)
+asyakitasi: galiba evet
+(03:01)
+baranaksoyy: ee cevabın nedir o zaman
+(03:02)
+asyakitasi: galiba bende sana aşığım
+baran
+(03:07)
+baranaksoyy: galiba değil, bence kesin bu
+(03:08)
+asyakitasi: emin misin peki?
+(03:09)
+baranaksoyy: senden emin olduğum kadar hiçbir şeyden emin olmadım
+(03:10)
+asyakitasi: o zaman... hadi bu hikayeyi 
+birlikte yazalım
+(03:11)
+baranaksoyy: günaydın bitanemmm💗💗
+(09:05)
+asyakitasi: günaydın kaptanımmm🫶
+(09:10)
+baranaksoyy: neler yapıyorsun bakalım
+(09:11)
+asyakitasi: yeni uyandım öyle 
+oturuyorum
+(09:23)
+asyakitasi: sen ne yapıyorsun
+(09:23)
+baranaksoyy: bende işte laptopumu 
+servise götürdüm şimdi arabayı yıkıyorum
+(09:30)
+asyakitasi: hm güzel eve ne zaman
+gideceksin
+(09:31)
+baranaksoyy: işte şimdi gidiyorum güzelim
+(09:40)
+asyakitasi: tamam
+(09:47)
+baranaksoyy; aşkım ben eve geldim 
+(10:30)
+asyakitasi: tamamdır
+(10:31)
+asyakitasi: bende annemle 
+anneannemlere gidiyorum 
+(10:38)
+baranaksoyy: Ne güzel, umarım keyifli geçer
+(10:42)
+asyakitasi: Teşekkür ederim, umarım 
+senin günün de güzel geçiyordur
+(10:44)
+baranaksoyy: Fena değil aslında, seninle 
+konuşmak güzel oldu sabah sabah
+(10:45)
+asyakitasi: Aynı şekilde, mesajın 
+gülümsetti
+(10:46)
+baranaksoyy: O zaman ben görevimi yerine 
+getirmişim demek
+(10:46)
+asyakitasi: Öyle görünüyor haha
+(10:50)
+asyakitasi: aşkım orada hava nasıl
+(12:38)
+asyakitasi: burada yağmur yağıyor 
+(12:39)
+asyakitasi: birden hava değişti 
+(12:39)
+asyakitasi: biraz önce çok sıcaktı
+(12:40)
+asyakitasi: şimdi bildiğin sel bastı gibi 
+(12:40)
+baranaksoyy: Vay ciddi mi yaa
+(12:41)
+baranaksoyy: Burada hala güneş var, 
+ama sen üşüme sakın
+(12:42)
+baranaksoyy: İstersen sana sıcak bir kahve 
+yollayayım buradan sanal yoldan
+(12:43)
+asyakitasi: keşke gerçek olsa, 
+çok güzel olurdu
+(12:44)
+baranaksoyy: Belki bir gün gerçek olur, kim bilir
+(12:45)
+asyakitasi: Kim bilir... belki de
+(12:46)
+baranaksoyy: ne yapıyorsun asya
+(23:45)
+asyakitasi: iyiyim sen
+(23:53)
+baranaksoyy: bende maç izliyorum yatacağım birazdan
+(23:57)
+asyakitasi: tamam iyi geceler💗
+(00:00)
+baranaksoyy: iyi geceler🤍
+(00:00)
+asyakitasi: günaydınnn
+(08:04)
+Görüldü, 08:33
+asyakitasi: neden görüldü attınız 
+beyefendi
+(08:37)
+Görüldü, 08:49
+asyakitasi: aşkım korkutma beni
+(08:50)
+Görüldü, 08:50
+asyakitasi: bi şey mi oldu 
+Baran?
+(09:12)
+Görüldü, 09:15
+asyakitasi: lütfen sadece 
+iyi olduğunu söyle
+(09:27)
+Görüldü, 09:28
+asyakitasi: tamam bir şey 
+söylemek istemiyorsan sustum
+(09:45)
+Görüldü, 09:46
+asyakitasi: ama ben burada 
+bekliyorum, ne olursa olsun
+(10:03)
+Görüldü, 10:05
+asyakitasi: seni merak etmekten 
+kendimi alamıyorum
+(10:27)
+Görüldü, 10:28
+baranaksoyy: asya hiç iyi şeyler 
+olmuyor benden haber bekle
+(11:47)
+asyakitasi: neler oluyor baran
+(11:55)
+Görüldü, 11:59
+asyakitasi: ee cevap verecek misin 
+artık baran
+(21:35)
+asyakitasi: hala mı yazmayacaksın
+(21:43)
+asyakitasi: tamam yazmanı ne kadarda 
+beklemeyi sevmesemde bekleyeceğim sırf
+ senin için
+(21:45)
+asyakitasi: baran bir dakika arar mısın
+(03:56)
+asyakitasi: sesini duymaya ihtiyacım var
+(03:58)
+Görüldü, 04:00
+asyakitasi: uyuyamıyorum... 
+içim hiç rahat değil
+(04:12)
+Görüldü, 04:13
+asyakitasi: ne yaşanıyorsa birlikte aşarız
+demiştin ya... sözün hâlâ geçerli mi?
+(04:30)
+Görüldü, 04:31
+asyakitasi: sen yazmaya karar 
+verince yazarsın hayatım
+(04:33)
+asyakitasi: iyi gecelerrr bitanemm
+(04:35)
+Görüldü, 04:56
+asyakitasi: Baran... Saat kaç oldu bilmiyorum ama ben hâlâ buradayım, seni bekliyorum. Bu sessizlik var ya, beni içten içe kemiriyor. Ne oldu, neden sustun? Hani bana hissettiklerin gerçekti? Hani birlikte bir yol çizecektik? Şu an seni anlamaya çalışmaktan kendimi unuttum. Belki bir şey oldu, belki anlatmak istemiyorsun ama en azından "iyiyim" de, "vazgeçtim" de, ne olursa olsun bir şey söyle... Bu belirsizlik çok yorucu. Seninle her şeye razıyım demiştim, hâlâ da öyleyim. Ama lütfen, sessiz kalarak beni yok sayma. Seni bekliyorum, hâlâ da severek bekliyorum.
+(06:04)
+asyakitasi: Bu oyunu sen başlattın Baran. Ama kimin sustuğunu,
+ kimin pes ettiğini gerçekten göreceğiz. Sen beni unuttun sanıyorsun ama ben seni 
+affetmedim... hiçbir zaman affetmeyeceğim. Sessizliğin artık silahım oldu. 
+Bunu sen istedin.
+(06:40)
+Görüldü 06:41
+asyakitasi: Bu sefer kaybeden ben olmayacağım. Bekle.
+(06:42)
+baranaksoyy: Asya... keşke bu kadar ileri gitmeseydik.
+(07:03)
+baranaksoyy: Sessiz kalmamın sebebi korkaklık değildi. 
+Ne diyeceğimi bilemedim. Çünkü... haklısın. 
+Her şeyin farkındayım.
+(07:04)
+baranaksoyy: Ama bilmediğin şeyler de var. 
+Ben o gün o kararı alırken sadece seni değil, 
+kendimi de yok ettim.
+(07:06)
+baranaksoyy: Beni affet demeyeceğim. Çünkü bu sefer...
+senin affetmen hiçbir şeyi değiştirmeyecek.
+(07:07)
+baranaksoyy: Ama ne yaparsan yap... unutma, 
+bu hikâyede sadece sen yaralanmadın.
+(07:08)
+Görüldü, 10:35
+baranaksoyy: Evet, seni kullandım. Bunu itiraf ediyorum.
+(11:33)
+baranaksoyy: Belki gerçekten sevdim seni... ama bu yetmedi.
+(11:33)
+baranaksoyy: Her şey bir noktadan sonra kontrolden çıktı.
+(11:34)
+baranaksoyy: Artık devam edemem.
+(11:34)
+barankaksoyy: Hoşça kal.
+(11:34)
+asyakitasi: Ne... ne diyorsun Baran? 
+Yani... sen beni mi kullandın? 
+Şu an bunu itiraf mı ediyorsun?
+(11:45)
+asyakitasi: Yani, tüm o anlar, o sözcükler, her şey...
+ sadece bir planın parçası mıydı?
+Beni düşündüğünü sandım, gerçekten... 
+Ama şimdi her şey başka bir anlam kazanıyor.
+(11:46)
+asyakitasi: Beni sadece bir piyon olarak mı gördün? 
+Bir figür, bir adım... Hepsi bu kadar mı? 
+Yani, gerçekten sadece "bir oyun" muydu senin için?
+(11:46)
+asyakitasi: O kadar inandım ki sana... 
+O kadar güvenmiştim. Beni sevdiğini düşünüyordum. 
+Ama sen her şeyin arkasında bir oyun kurmuşsun. 
+Bu kadar basit mi?
+(11:47)
+asyakitasi: Hayal kırıklığım... tarif edilemez.
+(11:47)
+asyakitasi: Oynamayı çok iyi bildiğini 
+söyledin ya... Ben de öyle.
+(11:49)
+asyakitasi: Ama sana bir şey söyleyeyim mi?
+(11:49)
+asyakitasi: seni küllerimde yakacağım
+(11:50)
+asyakitasi: sıra bende
+(11:52)
+Görüldü 12:11
+
+BIRINCI KITAP SONU
+KÜL: SIRA BENDE
+thegrilmand`
+            },
+            {
+                id: 2,
+                title: "KÜL: SIRA BENDE",
+                author: "thegrilmand",
+                cover: "sirabende.jpeg",
+                summary: "Oyun kuralına göre oynandığında intikam kaçınılmazdır. Baran yaptığı hatanın bedelini ödemeye çalışırken Asya küllerinden doğmaya kararlıdır. Çatışma, kırgınlıklar ve yeni maskeler...",
+                readTime: "12 dk okuma süresi",
+                content: `baranaksoyyy: oo engelimi kaldırmışsın
+(03:45)
+asyakitasi: rahatsız olduysan yine 
+engellerim
+(03:49)
+baranaksoyyy: niye tersliyorsun ki şimdi
+(03:55)
+asyakitasi: sorduğun soru mu 
+ Allah aşkına
+(03:57)
+baranaksoyyy: yaptık bir hata uzatmasak 
+olmaz mı
+(04:00)
+asyakitasi: olmaz
+(04:13)
+asyakitasi: yatıyorum ben
+(04:13)
+baranaksoyyy: iyi geceler 
+(04:15)
+Mesajınızı beğendi, 04:20…
+baranaksoyyy: tamam
+baranaksoyyy: günaydın
+(08:17)
+asyakitasi: sanada
+(08:20)
+baranaksoyyy: ee naber
+(08:28)
+asyakitasi: hiç, senden
+(08:43)
+baranaksoyyy: iyidir günümün aymasını bekliyorum
+(08:45)
+asyakitasi: senin günün çoktan aymıştır
+(08:46)
+baranaksoyyy: ne demek istiyorsun
+(08:50)
+asyakitasi: beni tercih ettiklerinle mutluluklar
+(08:51)
+INSTAGRAM KULLANICISI
+baranaksoyyy: yine başladık
+(08:59)
+Gönderildi, 09:00
+baranaksoyyy: yine engel yedim
+(09:30)
+yigitsari: neden ya
+(09:45)
+baranaksoyyy: çok erken gördün kanka
+(09:46)
+yigitsari: işim var oğlum
+(10:30)
+yigitsari: neden engelledi 
+(10:30)
+baranaksoyyy: bende bilmiyorum
+(10:34)
+baranaksoyyy: en son "beni tercih ettiklerinle mutluluklar" 
+yazdı ve engelledi
+(10:35)
+yigitsari: kıza onu kullandığını söyledin
+ ne yapmasını bekliyordun
+(10:36)
+baranaksoyyy: şimdi gerçekten hoşlanmaya başladım
+(10:36)
+baranaksoyyy: onu nasıl geri kazanabilirim
+(10:38)
+yigitsari: kuzenimi rahat bırak baran
+(10:40)
+baranaksoyyy: hadi kanka bu seferde sendeyiz
+(10:41)
+yigitsari: sana yedirir miyim oğlum
+ o hata bir kez yapılır
+(10:41)
+baranaksoyyy: küfür ettirme insanı abi ya
+(10:45)
+yigitsari: baran
+(14:34)
+baranaksoyyy: efendim
+(14:38)
+yigitsari: asya ile sohbet ettik biraz
+(14:38)
+baranaksoyyy: ee ne oldu
+(14:39)
+yigitsari: istemiyor kanka ya biraz zor
+(14:42)
+baranaksoyyy: istesen yapardın🤷‍♂️
+(14:43)
+yigitsari: kanka bir kere kaybettin 
+(14:43)
+yigitsari: ona yaptıklarından sonra seninle 
+yeniden olmasını nasıl bekliyorsun??
+(14:44)
+baranaksoyyy: yine diyorum
+(14:46)
+baranaksoyyy: istesen yapardın
+(14:46)
+baranaksoyyy: bir kızı ayarlayamadın
+(14:46)
+baranaksoyyy: kaç yıllık arkadaşız
+(14:47)
+yigitsari: nankörleşme baran
+(14:48)
+yigitsari: düşünmeden konuşuyorsun
+(14:48)
+yigitsari: bitirelim bu konuyu daha da uzatmadan
+(14:49)
+yigitsari: bitir şu saçmalığı
+(14:49)
+baranaksoyyy: saçmaladığım ve nankörleştiğim 
+falan yok
+(15:00)
+baranaksoyyy: ben senin yerinde olsam kendime
+mona lisa'yı bile ayarlardım
+(15:01)
+yigitsari: nankörsün kanka
+(15:10)
+yigitsari: konu bitsin arkadaşlığımız bitmeden
+(15:11)
+baranaksoyyy: konudan kaçmaya çalışıyorsun
+(15:14)
+baranaksoyyy: dediklerim doğru bir b*k yediğin yok
+(15:15)
+yigitsari: konudan kaçmaya çalıştığım falan yok
+(15:20)
+yigitsari: aynen kanka bir b*k yediğim yok
+(15:20)
+yigitsari: sana bir türlü yaranamadım zaten 
+yıllar boyunca
+(15:21)
+yigitsari: belki de haklısın 
+(15:22)
+Görüldü, 15:30…
+yigitsari: asya ile görüştüm bugün
+(23:23)
+baranaksoyyy: ee
+(23:25)
+yigitsari: neden ters yapıyorsun
+(23:25)
+baranaksoyyy: uzatma ne dediğini söyle
+(23:26)
+yigitsari: böyle davranışlarınla 
+hiç bir s*ki söylemem sana
+(23:26)
+baranaksoyyy: siktir amına koduğum malı
+(23:28)
+yigitsari: nankörsün kanka
+(23:28)
+yigitsari: 3 saattir senin nasıl 
+bu hale geldiğini düşünüyorum
+(02:12)
+baranaksoyyy: neyim varmış benim
+(02:30)
+baranaksoyyy: çokta iyiyim
+(02:30)
+yigitsari: biraz yukarısını okur musun 
+baran bana neler dedin 
+kendine gel biraz
+(02:32)
+baranaksoyyy: kendimdeyim zaten
+(02:33)
+yigitsari: eminmisin
+(02:40)
+baranaksoyyy: adım gibi
+(02:42)
+yigitsari: bana kendinde değilmişsin 
+gibi geldi ama
+(02:43)
+baranaksoyyy: senin benim hakkımda ki düşüncen zerre umrumda değil
+(02:43)
+yigitsari: öyle mi olduk baran
+(02:44)
+baranaksoyyy: evet
+(02:44)
+yigitsari: nankörsün kanka kabullen işte
+(02:45)
+baranaksoyyy: ne nankörü oğlum ben 
+göstermesemde şu hayatta sana en çok 
+değer veren insanım
+(02:47)
+yigitsari: neden belli etmiyorsun böyle 
+değer verdiğini hissedemiyorum
+(02:50)
+baranaksoyyy: sevmiyorum
+(02:51)
+yigitsari: sevmiyorum ne demek baran
+(02:52)
+baranaksoyyy: ne diyim oğlum sana şimdi
+(02:52)
+yigitsari: bilmiyorum kanka insan 
+değer verdiği insana böyle davranmaz
+(02:54)
+baranaksoyyy: yine başladın aynı şeylere
+(02:55)
+yigitsari: aynı şeylere başlamadım baran
+ sadece eskisi gibi olmanı istiyorum
+(02:55)
+baranaksoyyy: ben değişmedim ki
+(02:56)
+yigitsari: sen değişmedin de ben mi 
+değiştim amına koyayım
+(02:56)
+baranaksoyyy: bak yine sinirleniyorsun
+(02:57)
+yigitsari: çünkü anlamıyorsun beni
+(02:57)
+baranaksoyyy: anlamak istemiyorum belki de
+(02:58)
+yigitsari: he tamam baran anladım ben
+(03:00)
+baranaksoyyy: neyi anladın
+(03:00)
+yigitsari: bir insanın hayatında ne kadar 
+gereksiz olduğunu
+(03:03)
+baranaksoyyy: saçmalama oğlum
+(03:03)
+yigitsari: saçmalamıyorum baran sen bana 
+eskiden bir şey olsa ilk sen koşardın şimdi iki 
+kelimeyi çok görüyorsun
+(03:05)
+baranaksoyyy: her zaman yanında 
+olmak zorunda mıyım
+(03:06)
+yigitsari: zorunda değilsin zaten 
+mesele de bu değil
+(03:06)
+baranaksoyyy: ne o zaman mesele
+(03:07)
+yigitsari: benim seni hâlâ eskisi gibi görmem 
+ama senin beni çoktan silmiş olman
+(03:09)
+baranaksoyyy: seni silmedim
+(03:09)
+yigitsari: o zaman neden böyle yapıyorsun
+(03:10)
+baranaksoyyy: çünkü yoruldum yiğit
+(03:10)
+yigitsari: benden mi yoruldun
+(03:10)
+baranaksoyyy: her şeyi açıklamaktan yoruldum
+(03:11)
+yigitsari: bana bir kere olsun doğru düzgün 
+açıklama yaptın mı ki baran
+(03:14)
+baranaksoyyy: her şey benim suçum zaten 
+amına koyayım
+(03:15)
+yigitsari: ben sana suçlusun demiyorum ki
+ kanka
+(03:15)
+baranaksoyyy: e ne diyorsun o zaman
+(03:15)
+yigitsari: seni kaybetmekten korkuyorum 
+diyorum anlamıyor musun
+(03:16)
+baranaksoyyy: ...
+(03:17)
+yigitsari: bir şey desene baran
+(03:17)
+baranaksoyyy: ne dememi bekliyorsun
+(03:19)
+yigitsari: bilmiyorum
+(03:20)
+baranaksoyyy: işte sorun da bu yiğit
+hiçbir şeyi bilmiyorsun
+(03:23)
+yigitsari: sen biliyor musun peki
+(03:23)
+baranaksoyyy: en azından ne istemediğimi 
+biliyorum
+(03:24)
+yigitsari: benden ne istemiyorsun baran
+(03:24)
+baranaksoyyy: artık bu konuşmaları yapmak
+istemiyorum
+(03;25)
+yigitsari: tamam
+(03:30)
+baranaksoyyy: tamam mı
+(03:31)
+yigitsari: evet baran tamam
+(03:34)
+baranaksoyyy: yine trip atıyorsun
+(03:34)
+yigitsari: yok kanka trip atmıyorum
+(03:36)
+yigitsari: sadece ilk defa seni 
+zorlamayacağım
+(03:36)
+yigitsari: ne istiyorsan onu yap
+(03:36)
+baranaksoyyy: yiğit
+(03:37)
+yigitsari: efendim
+(03:40)
+baranaksoyyy: öyle demek istemedim
+(03:41)
+yigitsari: nasıl demek istedin baran
+(03:41)
+baranaksoyyy: bilmiyorum amına koyayım
+(03:42)
+yigitsari: işte ben de tam olarak 
+bunu söylüyorum zaten
+(03:42)
+baranaksoyyy: bu resmen bir saçmalık 
+(03:17)
+yigitsari: ney
+(03:17)
+baranaksoyyy: abi sen mal misin amk bir erkek 
+arkadaşını kaybetmekten korkuyorsun, sana ilgi 
+göstermediğimde trip atıyorsun, iyi geceler yazmıyorum 
+diye uyuyamıyorsun sen benim sevgilim misin amk 
+herkes yerini bilsin
+(03:19)
+yigitsari: olm bana geymişim 
+gibi konuşma daha ne olduğunu 
+bilmiyorsun üstüme suç atıp durma
+(03:20)
+yigitsari: baran bak şuana kadar gerçek 
+yakın arkadaşım hiç olmadı ilki sensin 
+sende böyle ilgi göstermedikçe, soğuk yaptıkça, 
+ters davrandıkça falan filan üzülüyorum amk 
+bu saçmalık değil ki bir arkadaşına gerektiğinden 
+de fazla bağlanmak
+(03:24)
+baranaksoyyy: benim için geylik kanka 
+sende bundan sonra yerini bilmen gerek 
+zaten biliyorsun ki benim en yakın arkadaşım 
+yok ben herkesle yakınım o yüzdende boşver 
+takılma böyle şeylere
+(03:29)
+yigitsari: e hani ben dim?
+(03:30)
+baranaksoyyy: bilmiyorum kanka
+(03:30)
+yigitsari: iyimiş
+(03:30)
+baranaksoyyy: triplerine devam ediyorsun
+demek
+(03:31)
+yigitsari: sana herşey trip zaten dimi
+(03:31)
+baranaksoyyy: evet
+(03:32)
+yigitsari: iyi geceler
+(03:33)
+Mesajı beğendiniz...
+baranaksoyyy: engeli ne zaman kaldıracakmış
+(09:45)
+yigitsari: bilmiyorum
+(09:57)
+baranaksoyyy: bir şeyide bil artık
+(09:99)
+yigitsari: kanka sen benden 
+ne istiyorsun amk
+(10:12)
+baranaksoyyy: seninle uğraşamayacağım
+(10:16)
+yigitsari: kanka aramız 
+ne zaman düzelecek
+(02:30)
+baranaksoyyy: bilmiyorum
+(11:11)
+yigitsari: neden
+(11:12)
+baranaksoyyy: of yiğit yeter
+(11:24)
+yigitsari: kanka ortalıkta hiçbir şey yokken 
+neden böyle duruma geldik amk
+(11:35)
+baranaksoyyy: nasıl hale gelmişik
+(11:40)
+yigitsari: arkadaşlığımız şuan çok kötü halde 
+farkındamısın bilmiyorum ama biraz kendine 
+gelmenin zamanı geldi bence
+(11:41)
+baranaksoyyy: ben zaten kendimdeyim
+(11:44)
+yigitsari: yine konuyu atlayıp kendine 
+çektin helal olsun
+(11:45)
+baranaksoyyy: teşekkürler
+(11:45)
+yigitsari: çok garipsin baran hemde çok
+(11:47)
+Mesajı beğendiniz...
+yigitsari: Baran gerçekten söyleyecek çok şeyim var ama artık değmez diye düşünüyorum sen inanılmaz değiştin bir insan bu kadar mı değişir bu kadar mı nankör olur gerçekten anlamıyorum.  zamanında yanında olan sana değer veren senin için iyi şeyler yapan insanları bu kadar kolay unutman gerçekten karakterini sorgulatıyor biz kimseye yaptığımız iyiliği başına kakmayız ama kimsenin de her şeyi unutup hiçbir şey olmamış gibi davranmasını kabul etmeyiz ben seni böyle tanımamıştım, açıkçası bu kadar değişmiş olman büyük hayal kırıklığı neyse bundan sonraki hayatında başarılar umarım hayatında istediğin her şeye ulaşırsın ama umarım bir gün insanların kıymetini onları kaybettikten sonra değil yanındayken öğrenirsin benim söyleyeceklerim bu kadar yolun açık olsun kendine iyi bak.
+(06:00)
+Instagram Kullanıcısı...
+baranaksoyyy: engeli kaldırmışsın
+(15:24)
+asyakitasi: evet
+(16:48)
+baranaksoyyy: şaşırttı
+(16:50)
+asyakitasi: rahatsız olduysan geri engellerim
+(16:59)
+baranaksoyyy: yok
+(17:00)
+asyakitasi: yiğite çok ayıp ettin
+(17:02)
+baranaksoyyy: ne ayıbı ya 
+(17:07)
+asyakitasi: baran onun bana neler dediğini 
+neler yaptığını bilip bilmeden çocuğa 
+neler demişsin bir de nankör değilim diyorsun 
+nankörsün amk
+(17:08)
+baranaksoyyy: bir sik yapamıyordu zaten
+(17:10)
+asyakitasi: malsın
+(17:11)
+baranaksoyyy: öyleyim
+(17:13)
+baranaksoyyy: yiğiti boşver sen nasılsın
+(17:27)
+asyakitasi: iyiyim
+(17:30)
+baranaksoyyy: bende iyiyim sağol sorduğun için
+(17:31)
+asyakitasi: neyini sormamı bekliyorsun yiğit 
+senden ötürü intihara kalkıştı gerizekali varlık
+(17:44)
+baranaksoyyy: aynen amk
+(17:45)
+Görüldü, 18:00
+baranaksoyyy: şuan aramızın bu dereceye varmasını 
+sağlayan o gerizekali kuzenin biliyorsun dimi
+(18:18)
+asyakitasi: şuan seninle konuşmamı sağlayanda 
+oydu biliyorsun dimi
+(18:20)
+baranaksoyyy: ne alaka amk
+(18:21)
+asyakitasi: baran cidden gerizekalısın
+(18:24)
+baranaksoyyy: senide o dolduruyordur dimi
+(18:25)
+baranaksoyyy: kiminle sevgili olsam hep aynı şeyi 
+yapıyor bıktım bundan
+(18:27)
+asyakitasi: sen öyle sanmaya devam et
+(18:28)
+baranaksoyyy: ben her zaman haklıyım zaten 
+sorun bende değil sizde
+(18:30)
+asyakitasi: ben sana sadece olanları söylüyorum
+ sen anlamak istediğin gibi anlamaya devam et
+(18:45)
+baranaksoyyy: yiğiti bir kenara bırakıp yarım 
+kalan hikayemizi devam etmeye ne dersin
+(19:19) 
+asyakitasi: düşünmem gerek
+(21:12)
+baranaksoyyy: beklerim
+(21:12)
+asyakitasi: belkide istemem neden bekleyceksin
+(21:14)
+baranaksoyyy: sevgimden
+(21:14)
+asyakitasi: sevseydin bana öyle laflar etmezdin baran 
+sen beni ve sevgimi harcadın seninle şuan alakam olmaması
+ gerekirken ben sana acıyıp yiğitin çabasını 
+göz önüne alarak senden engeli çektim
+(21:18)
+baranaksoyyy: yine yiğit 
+(21:18)
+asyakitasi: evet yine yiğit çünkü 
+onun sayesinde oldu herşey
+(21:19)
+baranaksoyyy: sanmıyorum
+(21:33)
+asyakitasi: sen yine saçmalamaya başladın 
+benimde zaten işim var
+(21:36)
+baranaksoyyy: tamamdır bende zaten yarın 
+erken uyanacağım iş görüşmem var
+(21:37)
+baranaksoyyy: yatıyorum ben iyi geceler
+(21:37)
+Mesajınızı beğendi, 22:10...
+baranaksoyyy: günaydın asya
+(08:00)
+Mesajınızı beğendi, 10:30...
+baranaksoyyy: ne zamana kadar böyle olacağız
+(10:30)
+asyakitasi: mesajını görmemi mi 
+bekliyordun amk
+(10:30)
+baranaksoyyy: evet
+(10:31)
+asyakitasi: belli
+(10:33)
+baranaksoyyy: ee soruma cevap gelmedii
+(10:34)
+asyakitasi: bilmiyorum
+(10:40)
+baranaksoyyy: ben burada düzelmemiz için 
+çabalarken senin yaptığına bak
+(10:45)
+asyakitasi: ne yapıyormuşum ben
+(10:59)
+baranaksoyyy: geç cevap veriyorsun bazen belkide 
+görüpte cevaplamıyorsundur orasını bilemem 
+hakkınıda yemek istemem hep yiğitin konusunu 
+açıyorsun o bende bitti anla şunu yiğitle artık 
+hiçbirşeyiz bana zaten arkadaş lazım değil sen 
+yetiyorsun beni o kadar siklemesende
+(11:05)
+asyakitasi: çok rollere giriyorsun baran benim sana
+ sinirim bozuk herşeyi yiğite bağlamayı bırak artık 
+çocuğun hiçbir şey yaptığı yok 
+(11:10)
+baranaksoyyy: aynen ya sinirlenmenin nedeni 
+bile odur herhalde😂
+(11:20)
+asyakitasi: birinin lafıyla bir sıralar "aşkımdan ölüp bittiğim" 
+erkeğe sinirlenmem onu engellemem korkma
+(11:24)
+asyakitasi: keşke biraz hatayı kendinde arasan
+(11:25)
+baranaksoyyy: bir şey yaptığım yok
+(11:26)
+asyakitasi: seninle yazıştıkça sinirlerim bozuluyor 
+bu yüzden yine erteliyorum sinir küpüne döndüm
+ senin yüzünden gerizekalı
+(11:29)
+baranaksoyyy: sende taktın bana amk 
+ne yaptım ben sana
+(11:30)
+Mesajınıza 🤦‍♀️ ifadesini bıraktı...
+baranaksoyyy: hadi barışalım artık
+(16:45)
+asyakitasi: böyle davranışlarla hiç bir sikim 
+olmayacak baran
+(16:52)
+baranaksoyyy: of bıktırdın artık asya
+(16:55)
+baranaksoyyy: yiğiti affedersem benimle 
+barışacak mısın 
+(16:56)
+asyakitasi: sadece bu değil baran akıllanırsan 
+affedeceğim seni buda imkansız gibi görünüyor
+(16:59)
+baranaksoyyy: akıllanacağım sana sözüm olsun
+(17:00)
+asyakitasi: inanmıyorum ama umarım düzelirsin
+(17:01)
+baranaksoyyy: göreceksin
+(17:01)
+baranaksoyyy: ne yapmam gerektiğini 
+söyle o zaman asya 
+(17:03)
+asyakitasi: her şeyi benim söylememi bekleme 
+baran biraz da kendin düşün 
+(17:05)
+baranaksoyyy: düşünüyorum zaten seni 
+kaybetmek istemiyorum 
+(17:06)
+asyakitasi: beni kaybetmek istemiyorsan önce 
+bana yaşattıklarını düşün 
+(17:08)
+baranaksoyyy: haklısın ama geçmişi değiştiremem ki 
+(17:09)
+asyakitasi: değiştiremezsin ama aynı şeyleri 
+tekrar yapmamayı seçebilirsin 
+(17:11)
+baranaksoyyy: yapmayacağım artık gerçekten 
+(17:12)
+asyakitasi: bunu zaman gösterecek baran sözlerin 
+artık benim için yeterli değil 
+(17:14)
+baranaksoyyy: peki sana kendimi kanıtlamak için bir şans ver 
+(17:16)
+asyakitasi: şans vermek kolay da güvenimi 
+yeniden kazanmak o kadar kolay değil 
+(17:18)
+baranaksoyyy: biliyorum ama vazgeçmeyeceğim senden 
+(17:19)
+asyakitasi: bakalım baran bu sefer gerçekten
+ değişebilecek misin 
+(17:21)
+baranaksoyyy: asya
+(04:45)
+asyakitasi: efendim
+(04:48)
+baranaksoyyy: uyumamışsın
+(04:48)
+asyakitasi: evet
+(04:50)
+baranaksoyyy: en son yazışmamızdan bu saate 
+kadar düşündüm tüm dediklerini ve ben suçluyum 
+kabulleniyorum
+(04:53)
+asyakitasi: çok şükür baran
+(04:55)
+baranaksoyyy: gözüne girmişimdir umarım
+(04:55)
+asyakitasi: tabikide
+(04:59)
+baranaksoyyy: benim uyumam gerek asya
+(05:00)
+baranaksoyyy: iyi geceler
+(05:00)
+asyakitasi: iyi gecelerr
+(05:01)
+baranaksoyyy: sonunda🥹
+(05:01)
+asyakitasi: günaydınn
+(08:30)
+baranaksoyyy: günaydın
+(08:30)
+asyakitasi: naber
+(08:31)
+baranaksoyyy: iyidir uykusuzluktan 
+geberiyorum
+(08:33)
+baranaksoyyy: senden naber
+(08:33)
+asyakitasi: iyidir ödevlerimi kontrol ettim 
+birazdan öğretmene göndereceğim
+(08:36)
+baranaksoyyy: iyiymiş
+(08:36)
+asyakitasi: bir de bana sor😭
+(08:37)
+baranaksoyyy: ne zaman bitiyor okulun 
+(08:38)
+asyakitasi: daha çok var
+(08:45)
+baranaksoyyy: son senen mi yoksa daha var mı
+(08:46)
+asyakitasi: son
+(08:50)
+baranaksoyyy: hmm güzell
+(08:51)
+asyakitasi: evet
+(08:51)
+baranaksoyyy: ben seni bırakayım ödevini gönder sonra yazarsın
+(08:53)
+asyakitasi: tamamdırrr
+(08:53)
+asyakitasi: gönderdim
+(10:00)
+baranaksoyyy: önemli ödev gibi
+(10:01)
+asyakitasi: evet belki de son ödevim o yüzden
+ bu kadar önem veriyorum
+(10:03)
+baranaksoyyy: anladım
+(10:03)
+asyakitasi: sonuçlar bu akşam saat 22:00'da 
+çıkacak
+(10:04)
+baranaksoyyy: hmm streslisindir sen şimdi
+(10:04)
+asyakitasi: zaten
+(10:05)
+baranaksoyyy: korkma yavrum ben yanındayım
+(10:06)
+asyakitasi: biliyorum bu yandan hiç şüphem yok zaten
+(10:06)
+baranaksoyyy: öyle miii
+(10:07)
+asyakitasi: evettt bitanemm
+(10:07)
+baranaksoyyy: bir dakika
+(10:08)
+baranaksoyyy: sen bana bitanem mi dedin
+(10:08)
+asyakitasi: evet bitanem
+(10:10)
+baranaksoyyy: hani benden nefret ediyordun
+(10:11)
+asyakitasi: ben seni hala seviyorum
+ baran
+(10:13)
+asyakitasi: sadece akıllanmanı bekliyordum
+(10:13)
+asyakitasi: buda olduğuna göre eski bize 
+dönmemiz için bir engel kalmadı
+(10:14)
+baranaksoyyy: ben de seni hâlâ seviyorum 
+asya bu sefer her şeyi düzeltmek ve sana hak 
+ettiğin sevgiyi göstermek istiyorum yeniden 
+başlayalım mı ❤️ 
+(10:15)
+asyakitasi: oluurrrr
+(10:20)
+baranaksoyyy: bir an görüldü attın engeli yedim 
+sandım
+(10:21)
+asyakitasi: yok şoktan ve sevinçten 
+ne deyeceğimi bilemedim 
+(10:22)
+baranaksoyyy: bende sevinçten yerimde 
+duramıyorum
+(10:30)
+asyakitasi: önemli ödevi teslim ettikten 
+sonra seninle yeniden kavuşmak 
+çok iyi geldi
+(12:49)
+baranaksoyyy: dimi
+(12:50)
+asyakitasi: o zaman yeniden başlıyoruz
+(13:00)
+baranaksoyyy: yavrum
+(22:00)
+baranaksoyyy: sonuçlar çıktı mııı
+(22:00)
+baranaksoyyy: nerdesiinnn
+(22:10)
+baranaksoyyy: merakta bırakma insanı 
+(22:15)
+baranaksoyyy: aloooooo
+(22:30)
+baranaksoyyy: orada mısın
+(22:48)
+baranaksoyyy: asyaaaa
+(22:50)
+baranaksoyyy: lan yoksa
+(22:58)
+baranaksoyyy: umarım sonuçların iyidir
+(23:00)
+baranaksoyyy: neyse ben yatıyorum iyi geceler bitaneemmm
+(00:00)
+asyakitasi: uyumuşum 
+(06:50)
+asyakitasi: günaydıınnn
+(06:50)
+asyakitasi: şimdi bakıyorum sonuca
+(06:51)
+asyakitasi: aaaaaaaaa
+(06:55)
+asyakitasi: sonuç çok iyi amkkk
+(06:56)
+asyakitasi: sevinçten bayılacağım
+(07:00)
+baranaksoyyy: günaydıııınnnnnnn
+(08:00)
+asyakitasi: ben geri yatıyorum çok uykum var
+(08:03)
+baranaksoyyy: tamamdır yavrum
+(08:03)
+asyakitasi: kendine dikkat et
+(08:04)
+baranaksoyyy: sen dediysen ederim
+(08:06)
+asyakitasi: öyle miiii
+(08:10)
+baranaksoyyy: öyleeeeee
+(08:11)
+asyakitasi: neyse telefonu kapatıyorum 
+haberin olsun
+(08:15)
+baranaksoyyy: tamamdır 
+(08:15)
+baranaksoyyy: asya
+(13:31)
+asyakitasi: efendimm
+(13:31)
+baranaksoyyy: çok kötüyüm
+(13:32)
+asyakitasi: neler oluyor baran
+(13:35)
+baranaksoyyy: babamla annemi hastaneye kaldırmışlar
+(13:36)
+asyakitasi: ne
+(13:37)
+asyakitasi: ne olmuş
+(13:37)
+asyakitasi: baran
+(13:40)
+asyakitasi: endişelendirme insanı mesajlarıma
+ cevap ver
+(13:41)
+baranaksoyyy: sanırım durumları 
+ciddi
+(13:45)
+asyakitasi: neden hastanedeler
+(13:46)
+baranaksoyyy: kaza yapmışlar
+(13:56)
+asyakitasi: ne diyorsun sen ya
+(13:58)
+asyakitasi: nerde ne zaman
+(14:02)
+baranaksoyyy: hiçbir şey bilmiyorum asya
+(14:03)
+baranaksoyyy: babamın arkadaşı aradı
+(14:03)
+baranaksoyyy: şuan hastaneye gidiyorum
+(14:04)
+baranaksoyyy: çok korkuyorum asya
+(14:05)
+asyakitasi: korkma bitanem ben 
+yanındayım
+(14:10)
+asyakitasi: iyileşecekler ve sapasağlam 
+hep beraber olacaksınız
+(14:11)
+baranaksoyyy: inşallah
+(14:12)
+asyakitasi: inan bana baran
+(14:15)
+baranaksoyyy: inanıyorum zaten bitanem
+(14:16)
+asyakitasi: bir şey olursa ararsın
+(14:16)
+asyakitasi: buradayım
+(14:16)
+asyakitasi: haberlendir benide 
+aklım sizde
+(14:16)
+baranaksoyyy: tamamdır bitanem konumum 
+zaten sana açık yazarsan veya bakmazsam oradan 
+bakarsın
+(14:20)
+baranaksoyyy: on dakikalık yolum kaldı zaten
+ hastaneye
+(14:20)
+asyakitasi: tamamdır iyi haberlerle gel olur muuu🥹
+(14:21)
+baranaksoyyy: 🥹🥹
+(14:21)
+baranaksoyyy: çok şükür ki iyiler
+(21:12)
+baranaksoyyy: ama bu gece yoğun bakımında 
+kalacaklarmış
+(21:12)
+baranaksoyyy: henüz tehlikeyi atlatmadılar yani
+(21:13)
+asyakitasi: allah yardımcıları olsun
+(21:15)
+baranaksoyyy: amin
+(21:15)
+baranaksoyyy: sen neler yaptın bakim
+(21:16)
+asyakitasi: iyidir birazdan dışarı çıkacağım
+(21:20)
+baranaksoyyy: bu saatte mi
+(21:21)
+asyakitasi: evet ne var ki saatte
+(21:25)
+baranaksoyyy: yok bir şey sadece bu 
+saatte sokaklar filan güvenli olmuyor 
+ondan öyle dedim
+(21:26)
+asyakitasi: ben kendimi korurum merak etme sen
+(21:26)
+baranaksoyyy: merak etmemek imkânsız
+(21:30)
+asyakitasi: boşver
+(21:34)
+baranaksoyyy: asya
+(23:11)
+baranaksoyyy: annemle babama bir şeyler oluyor
+(23:15)
+baranaksoyyy: doktorlar etraflarına toplandı durum ciddi galiba
+(23:16)
+baranaksoyyy: asya
+(23:29)
+baranaksoyyy: annemi ve babamı
+(23:30)
+baranaksoyyy: kaybettim
+(23:30)
+baranaksoyyy: asya onlar öldüler
+(23:31)
+baranaksoyyy: asya
+(23:32)
+baranaksoyyy: nerdesin neden yazdıklarıma cevap vermiyorsun
+(23:32)
+baranaksoyyy: hani hep yanımda olacaktın
+(23:34)
+baranaksoyyy: asya orada mısın
+(23:44)
+tanidikbiryabanci: hey
+(01:23)
+tanidikbiryabanci: selam
+(01:23)
+baranaksoyyy: sen kimsin
+(01:24)
+tanidikbiryabanci: adımında dediği gibi 
+"tanıdık bir yabancı"
+(01:25)
+tanidikbiryabanci: lafı uzatmadan 
+konuya giriyorum
+(01:29)
+baranaksoyyy: nedir o
+(01:30)
+tanidikbiryabanci: bir fotoğraf gönderildi....
+baranaksoyyy: ne
+(01:36)
+baranaksoyyy: o kız asya mı
+(01:36)
+tanidikbiryabanci: gördüğün gibi evet
+(01:37)
+tanidikbiryabanci: aldatılıyorsun 
+(01:37)
+baranaksoyyy: evet
+(01:40)
+tanidikbiryabanci: umarım doğru bir şey 
+yapmışımdır benden bu kadar hoşca kal dostum
+Instagram Kullanıcısı, 01:50...
+-
+baranaksoyyy: asya
+(02:00)
+baranaksoyyy: bu ne
+(02:00)
+baranaksoyyy: bir fotoğraf gönderildi...
+baranaksoyyy: asya
+(02:03)
+asyakitasi: efendim?
+(02:03)
+baranaksoyyy: bana doğruyu söyle
+(02:04)
+asyakitasi: ne oldu yine?
+(02:05)
+baranaksoyyy: fotoğraftaki çocuk kim?
+(02:05)
+asyakitasi: hangi fotoğraf?
+(02:05)
+baranaksoyyy: asya benimle oyun oynama
+(02:06)
+asyakitasi: tamam, benim. Ee?
+(02:06)
+baranaksoyyy: yanındaki kim?
+(02:08)
+asyakitasi: görünen kişi işte.
+(02:10)
+baranaksoyyy: sevgilin mi?
+(02:11)
+asyakitasi: evet
+(02:16)
+baranaksoyyy: dalga mı geçiyorsun benimle?
+(02:16)
+asyakitasi: hayır, gayet ciddiyim.
+(02:16)
+baranaksoyyy: beni aldatıyor musun sen?
+(02:20)
+asyakitasi: galiba😄
+(02:22)
+baranaksoyyy: asya...
+(02:22)
+asyakitasi: ne oldu Baran? İnsan sevdiği kişiden
+ kullanıldığını anladığında üzülüyormuş değil mi?
+(02:25)
+baranaksoyyy: ben sana bunu
+yaşatmadım.
+(02:26)
+asyakitasi: yaşattın. Hem de defalarca.
+(02:26)
+baranaksoyyy: intikam mı alıyorsun
+benden?
+(02:28)
+asyakitasi: sonunda anladın
+(02:28)
+asyakitasi: sana ne demiştim hatırlıyor musun
+(02:30)
+asyakitasi: seni küllerimde yakacağımı söylemiştim
+(02:30)
+asyakitasi: öylede yaptım
+(02:30)
+asyakitasi: bu hayatta herşey sırayla olur baran
+(02:31)
+asyakitasi: iyilik, kötülük...
+(02:31)
+asyakitasi: bu seferde sıra bendeydi
+(02:33)
+asyakitasi: maskeler bir gün düşer baran
+(02:34)
+asyakitasi: seninki çoktan düştü
+(02:35)
+
+İKİNCİ KITAP SONU
+KÜL: MASKE`
+            }
+        ];
+
+        let currentFontSize = 1.15;
+        let favorites = [];
+
+        function renderBooks() {
+            const container = document.getElementById('books-container');
+            container.innerHTML = '';
+
+            booksData.forEach(book => {
+                const isFav = favorites.includes(book.id);
+                const card = document.createElement('div');
+                card.className = 'book-card';
+
+                card.innerHTML = `
+                    <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFav(event, ${book.id})">♥</button>
+                    <div class="book-cover-container" onclick="openBook(${book.id})">
+                        <img src="${book.cover}" alt="${book.title}" class="book-cover">
+                    </div>
+                    <div class="book-info">
+                        <div>
+                            <h3>${book.title}</h3>
+                            <div class="author">${book.author}</div>
+                            <div class="read-time">⏱ ${book.readTime}</div>
+                            <div class="book-summary">${book.summary}</div>
+                        </div>
+                        <button class="read-btn" onclick="openBook(${book.id})">Kitabı Oku</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleFav(event, bookId) {
+            event.stopPropagation();
+            if (favorites.includes(bookId)) {
+                favorites = favorites.filter(id => id !== bookId);
+            } else {
+                favorites.push(bookId);
+            }
+            renderBooks();
+        }
+
+        function openBook(bookId) {
+            const book = booksData.find(b => b.id === bookId);
+            if (!book) return;
+
+            document.getElementById('home-view').style.display = 'none';
+            document.getElementById('reader-view').style.display = 'block';
+            
+            document.getElementById('reader-book-title').innerText = `${book.title}`;
+            document.getElementById('reader-author-tag').innerText = `Yazar: ${book.author}`;
+            document.getElementById('reader-stats-tag').innerText = `${book.readTime} • Kesintisiz Okuma Modu`;
+            
+            // Kapak Görselini Atıyoruz
+            document.getElementById('reader-cover-img').src = book.cover;
+            
+            // Metinler sırasıyla ve eksiksiz geliyor
+            document.getElementById('reader-content').innerText = book.content;
+            
+            window.scrollTo(0, 0);
+            window.onscroll = updateProgressBar;
+        }
+
+        function goBack() {
+            document.getElementById('reader-view').style.display = 'none';
+            document.getElementById('home-view').style.display = 'block';
+            document.getElementById('progress-bar').style.width = '0%';
+            window.onscroll = null;
+            window.scrollTo(0, 0);
+        }
+
+        function updateProgressBar() {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('progress-bar').style.width = scrolled + '%';
+        }
+
+        function changeFontSize(direction) {
+            currentFontSize += direction * 0.1;
+            if (currentFontSize < 0.9) currentFontSize = 0.9;
+            if (currentFontSize > 1.8) currentFontSize = 1.8;
+            document.getElementById('reader-content').style.fontSize = currentFontSize + 'rem';
+        }
+
+        function setTheme(themeName) {
+            if (themeName === 'sepia') {
+                document.documentElement.setAttribute('data-theme', 'sepia');
+            } else if (themeName === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+        }
+
+        window.onload = renderBooks;
+    </script>
+</body>
+</html>
